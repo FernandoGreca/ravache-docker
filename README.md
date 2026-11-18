@@ -46,7 +46,7 @@ implante a partir deste diretório:
 ```bash
 gcloud auth login
 gcloud config set project ID_DO_PROJETO
-gcloud run deploy ravache-docker --source . --region southamerica-east1 --allow-unauthenticated --min 0 --max 1
+gcloud run deploy ravache-docker --source . --region us-central1 --allow-unauthenticated --min 0 --max 1
 ```
 
 O comando pede para habilitar APIs necessárias se ainda não estiverem ativas.
@@ -57,8 +57,9 @@ Após configurar o Workload Identity Federation do Google Cloud para o GitHub
 Actions, cadastre estas variáveis no repositório (Settings → Secrets and
 variables → Actions → Variables): `GCP_PROJECT_ID`,
 `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_SERVICE_ACCOUNT` e, opcionalmente,
-`GCP_REGION`. A documentação do
-[Google Cloud para implantação contínua](https://cloud.google.com/run/docs/continuous-deployment)
-explica a configuração do vínculo. Quando as três primeiras variáveis estiverem
-definidas, cada push validado em `main` também implanta o serviço público no
-Cloud Run; `GCP_REGION` usa `us-central1` por padrão.
+`GCP_REGION`. A documentação oficial de
+[Workload Identity Federation para pipelines de implantação](https://cloud.google.com/iam/docs/workload-identity-federation-with-deployment-pipelines)
+explica a configuração do vínculo sem salvar uma chave de longa duração no
+GitHub. Quando as três primeiras variáveis estiverem definidas, cada push
+validado em `main` também implanta o serviço público no Cloud Run;
+`GCP_REGION` usa `us-central1` por padrão.
