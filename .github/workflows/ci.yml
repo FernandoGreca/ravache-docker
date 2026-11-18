@@ -28,38 +28,19 @@ jobs:
       - name: Build Docker image
         run: docker build --tag ravache-docker:${{ github.sha }} .
 
-  deploy:
-    if: >-
-      github.event_name == 'push' &&
-      vars.GCP_PROJECT_ID != '' &&
-      vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' &&
-      vars.GCP_SERVICE_ACCOUNT != ''
+  deploy-render:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
+    env:
+      RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
+      - name: Trigger Render deployment
+        if: env.RENDER_DEPLOY_HOOK != ''
+        run: curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK"
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v3
-        with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
-          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-
-      - name: Set up Google Cloud CLI
-        uses: google-github-actions/setup-gcloud@v3
-
-      - name: Deploy to Cloud Run
-        run: >-
-          gcloud run deploy ravache-docker
-          --source .
-          --project "${{ vars.GCP_PROJECT_ID }}"
-          --region "${{ vars.GCP_REGION || 'us-central1' }}"
-          --allow-unauthenticated
-          --min 0
-          --max 1
-          --quiet
+      - name: Report missing deploy hook
+        if: env.RENDER_DEPLOY_HOOK == ''
+        run: echo "Add the RENDER_DEPLOY_HOOK repository secret to enable Render deployments."
